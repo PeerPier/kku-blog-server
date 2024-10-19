@@ -17,7 +17,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: "*",
+    origin: ["http://localhost:3000", "https://kku-blog-client.vercel.app"],
   }
 });
 require("dotenv").config();
@@ -32,7 +32,7 @@ app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 
 app.use(
   cors({
-    origin: "*",
+    origin: ["http://localhost:3000", "https://kku-blog-client.vercel.app"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
