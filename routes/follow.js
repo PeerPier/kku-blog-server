@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Notification = require("../models/notification");
+const Notification = require("../models/notifaications");
 const User = require("../models/user");
 
 router.post("/", async (req, res) => {
@@ -39,13 +39,11 @@ router.post("/", async (req, res) => {
 
       if (!existingNotification) {
         const notification = new Notification({
-          user: you._id,
+          user: you._id, // Who receives the notification (you)
+          notification_for: me._id, // Who is creating the notification (me)
           type: "follow",
-          message: `${me.firstname} ${
-            me.lastname || ""
-          } started following you.`,
-          entity: me._id,
-          entityModel: "User",
+          entity: me._id, // The entity involved, which is a user
+          entityModel: "User", // Entity model type
         });
         await notification.save();
       }
@@ -67,10 +65,14 @@ router.post("/", async (req, res) => {
 // Route URL to get user data by ID
 router.get("/:id", async function (req, res, next) {
   try {
-    const user = await User.findById(req.params.id).lean();
+    const user = await User.findById(req.params.id)
+      .lean()
+      .populate("followers", "firstname fullname")
+      .populate("following", "firstname fullname");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+    console.log("user", user);
     res.json(user);
   } catch (err) {
     console.error(err);
@@ -81,8 +83,8 @@ router.get("/:id", async function (req, res, next) {
 router.get("/users/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
-      .populate("followers", "firstname lastname")
-      .populate("following", "firstname lastname");
+      .populate("followers", "firstname fullname")
+      .populate("following", "firstname fullname");
     if (!user) return res.status(404).send("User not found");
     res.json(user);
   } catch (error) {
